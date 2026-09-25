@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ömer Kripto Motoru</title>
+
+<style>
+body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: white;
+    margin: 0;
+    padding: 20px;
+}
+
+h1 {
+    text-align: center;
+}
+
+#durum {
+    text-align: center;
+    color: #aaa;
+    margin-bottom: 20px;
+}
+
+.tablo {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    border: 1px solid #333;
+    padding: 10px;
+    text-align: center;
+}
+
+th {
+    background: #222;
+}
+
+.al {
+    color: #00ff88;
+    font-weight: bold;
+}
+
+.sat {
+    color: #ff5555;
+    font-weight: bold;
+}
+
+.bekle {
+    color: #ffd700;
+    font-weight: bold;
+}
+
+.bilgi {
+    margin-top: 20px;
+    padding: 15px;
+    background: #1c1c1c;
+    border-radius: 10px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🚀 Ömer Kripto Motoru</h1>
+
+<div id="durum">
+Piyasa verileri alınıyor...
+</div>
+
+<table class="tablo">
+
+<thead>
+<tr>
+<th>Coin</th>
+<th>Fiyat</th>
+<th>Giriş</th>
+<th>Alt Limit</th>
+<th>Üst Limit</th>
+<th>Kademe</th>
+<th>Yön</th>
+</tr>
+</thead>
+
+<tbody id="tablo"></tbody>
+
+</table>
+
+<div class="bilgi">
+
+<b>Sanal Sermaye:</b> 10.000 TL<br>
+<b>Kademe:</b> 14<br>
+<b>Sistem:</b> Canlı piyasa verisi
+
+</div>
+
+<script>
+
+const coinler = [
+    "BTCUSDT",
+    "ETHUSDT",
+    "XRPUSDT",
+    "SOLUSDT",
+    "DOGEUSDT"
+];
+
+const kademeSayisi = 14;
+
+async function fiyatGetir(coin) {
+
+    try {
+
+        const cevap = await fetch(
+            "https://api.binance.com/api/v3/ticker/price?symbol=" + coin
+        );
+
+        const veri = await cevap.json();
+
+        return Number(veri.price);
+
+    } catch (hata) {
+
+        console.log(hata);
+
+        return null;
+    }
+}
+
+
+function analizYap(fiyat) {
+
+    if (!fiyat) {
+
+        return {
+            alt: "-",
+            ust: "-",
+            yon: "VERİ YOK"
+        };
+
+    }
+
+    const alt = fiyat * 0.97;
+    const ust = fiyat * 1.03;
+
+    return {
+
+        alt: alt,
+        ust: ust,
+        yon: "BEKLE"
+
+    };
+
+}
+
+
+async function motoruCalistir() {
+
+    const tablo = document.getElementById("tablo");
+
+    tablo.innerHTML = "";
+
+    document.getElementById("durum").innerText =
+        "Canlı piyasa verileri alınıyor...";
+
+    for (const coin of coinler) {
+
+        const fiyat = await fiyatGetir(coin);
+
+        const analiz = analizYap(fiyat);
+
+        const satir = document.createElement("tr");
+
+        satir.innerHTML = `
+
+        <td>
+        ${coin.replace("USDT", "")}
+        </td>
+
+        <td>
+        ${fiyat ? fiyat.toLocaleString("tr-TR") : "-"}
+        </td>
+
+        <td>
+        ${fiyat ? fiyat.toLocaleString("tr-TR") : "-"}
+        </td>
+
+        <td>
+        ${fiyat ? analiz.alt.toLocaleString("tr-TR") : "-"}
+        </td>
+
+        <td>
+        ${fiyat ? analiz.ust.toLocaleString("tr-TR") : "-"}
+        </td>
+
+        <td>
+        ${kademeSayisi}
+        </td>
+
+        <td class="bekle">
+        ${analiz.yon}
+        </td>
+
+        `;
+
+        tablo.appendChild(satir);
+
+    }
+
+    document.getElementById("durum").innerText =
+        "Son güncelleme: " +
+        new Date().toLocaleTimeString("tr-TR");
+
+}
+
+
+motoruCalistir();
+
+setInterval(motoruCalistir, 30000);
+
+</script>
+
+</body>
+</html>
